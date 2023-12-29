@@ -1,0 +1,53 @@
+--Retrieve bmw products along with their sales and revenue:
+
+SELECT s.product_id, p.product_name, COALESCE(SUM(s.quantity), 0) AS total_sold,
+       COALESCE(SUM(s.quantity * s.price), 0) AS total_revenue
+FROM bmw.sales s
+LEFT JOIN bmw.products p ON s.product_id = p.product_id
+GROUP BY s.product_id, p.product_name;
+
+
+--Find bmw products with the highest average rating:
+SELECT s.product_id, p.product_name, AVG(r.rating) AS avg_rating
+FROM bmw.sales s
+LEFT JOIN bmw.product_reviews r ON s.product_id = r.product_id
+GROUP BY s.product_id, p.product_name
+ORDER BY avg_rating DESC
+LIMIT 10;
+
+--Identify bmw products with low inventory across all stores:
+
+SELECT s.product_id, p.product_name, AVG(r.rating) AS avg_rating
+FROM bmw.sales s
+LEFT JOIN bmw.product_reviews r ON s.product_id = r.product_id
+GROUP BY s.product_id, p.product_name
+ORDER BY avg_rating DESC
+LIMIT 10;
+
+--Retrieve bmw products with sales growth compared to the previous month:
+
+WITH MonthlySales AS (
+   SELECT product_id, SUM(quantity) AS total_sales
+   FROM bmw.sales
+   WHERE EXTRACT(MONTH FROM sale_date) = EXTRACT(MONTH FROM CURRENT_DATE)
+   GROUP BY product_id
+)
+SELECT s.product_id, p.product_name, COALESCE(ms.total_sales, 0) AS current_month_sales,
+       COALESCE(ms.total_sales - LAG(ms.total_sales) OVER (ORDER BY s.product_id), 0) AS sales_growth
+FROM bmw.sales s
+LEFT JOIN MonthlySales ms ON s.product_id = ms.product_id
+LEFT JOIN bmw.products p ON s.product_id = p.product_id;
+
+--Find bmw products with the highest number of reviews:
+
+SELECT s.product_id, p.product_name, COALESCE(COUNT(r.review_id), 0) AS total_reviews
+FROM bmw.sales s
+LEFT JOIN bmw.product_reviews r ON s.product_id = r.product_id
+LEFT JOIN bmw.products p ON s.product_id = p.product_id
+GROUP BY s.product_id, p.product_name
+ORDER BY total_reviews DESC
+LIMIT 10;
+
+
+
+
