@@ -1,0 +1,138 @@
+--Get a list of all products in the bmw.auction table:
+SELECT * FROM bmw.auction;
+
+
+-- Retrieve auction data for a specific item:
+SELECT * FROM bmw.auction
+WHERE item_id = 'your_item_id';
+
+
+--Find the total bids for a specific item:
+SELECT item_id, COUNT(bid_id) AS total_bids
+FROM bmw.auction
+WHERE item_id = 'your_item_id'
+GROUP BY item_id;
+
+--Get the top-bidding items:
+SELECT item_id, COUNT(bid_id) AS total_bids
+FROM bmw.auction
+GROUP BY item_id
+ORDER BY total_bids DESC
+LIMIT 10;
+
+--Retrieve auction data within a date range:
+SELECT * FROM bmw.auction
+WHERE auction_date BETWEEN 'start_date' AND 'end_date';
+
+--Calculate average bids per day:
+SELECT DATE(auction_date) AS auction_day, AVG(bids) AS avg_bids_per_day
+FROM bmw.auction
+GROUP BY auction_day;
+
+
+--Find the total revenue from auctions:
+
+SELECT SUM(winning_bid) AS total_revenue
+FROM bmw.auction;
+
+
+--Identify items with low bidding activity:
+
+SELECT item_id, COUNT(bid_id) AS total_bids
+FROM bmw.auction
+GROUP BY item_id
+HAVING total_bids < 'threshold_value';
+
+
+--Identify items with no bids:
+SELECT item_id
+FROM bmw.auction
+WHERE bid_id IS NULL;
+
+--Retrieve the latest bid for each item:
+
+SELECT item_id, MAX(auction_date) AS latest_bid_date
+FROM bmw.auction
+GROUP BY item_id;
+
+
+--Calculate the average bidding activity per user:
+SELECT user_id, AVG(bids) AS avg_bidding_activity
+FROM (
+    SELECT user_id, item_id, COUNT(bid_id) AS bids
+    FROM bmw.auction
+    GROUP BY user_id, item_id
+) AS user_bids
+GROUP BY user_id;
+
+
+--Retrieve items with bids above a certain amount:
+SELECT item_id, winning_bid
+FROM bmw.auction
+WHERE winning_bid > 'threshold_amount';
+
+--Identify users who have bid on items in multiple categories:
+
+SELECT user_id
+FROM (
+    SELECT user_id, COUNT(DISTINCT category) AS unique_categories
+    FROM bmw.auction
+    GROUP BY user_id
+) AS user_categories
+WHERE unique_categories > 1;
+
+
+--Retrieve the items with the highest average bid amount:
+
+SELECT item_id, AVG(winning_bid) AS avg_bid_amount
+FROM bmw.auction
+GROUP BY item_id
+ORDER BY avg_bid_amount DESC
+LIMIT 10;
+
+--Identify users who have bid on the same item multiple times:
+
+SELECT user_id, item_id, COUNT(bid_id) AS bid_count
+FROM bmw.auction
+GROUP BY user_id, item_id
+HAVING bid_count > 1;
+
+--Get a list of items with their highest winning bid from multiple auction tables:
+
+SELECT i.item_id, MAX(b1.winning_bid) AS highest_bid
+FROM items i
+LEFT JOIN bmw.auction1 b1 ON i.item_id = b1.item_id
+LEFT JOIN bmw.auction2 b2 ON i.item_id = b2.item_id
+GROUP BY i.item_id;
+
+
+--Find users who have bid on items from multiple auction tables:
+
+SELECT u.user_id, u.username
+FROM user_info u
+JOIN bmw.auction1 b1 ON u.user_id = b1.user_id
+JOIN bmw.auction2 b2 ON u.user_id = b2.user_id
+GROUP BY u.user_id
+HAVING COUNT(DISTINCT b1.item_id) > 1 AND COUNT(DISTINCT b2.item_id) > 1;
+
+--Retrieve bid details along with user information:
+
+SELECT b.bid_id, b.user_id, u.username, b.winning_bid
+FROM bmw.auction1 b
+JOIN user_info u ON b.user_id = u.user_id;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
